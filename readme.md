@@ -9,10 +9,12 @@ Login to Amazon
 # Create an access key
 
 aws configure
+
 Default region name: ap-southeast-2
+
 Default output format: json
 
-Terraform CLI
+
 # Get Terraform
 
 curl -o /tmp/terraform.zip -LO https://releases.hashicorp.com/terraform/0.14.3/terraform_0.14.3_linux_amd64.zip
