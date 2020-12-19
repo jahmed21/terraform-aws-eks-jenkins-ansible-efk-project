@@ -33,7 +33,7 @@ terraform apply
 
 # grab EKS config
 
-aws eks update-kubeconfig --name getting-started-eks --region eu-central-1
+aws eks update-kubeconfig --name getting-started-eks --region ap-southeast-2
 
 # Get kubectl
 
