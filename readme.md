@@ -9,9 +9,9 @@ Login to Amazon
 # Create an access key
 
 aws configure
-
 Default region name: ap-southeast-2
 Default output format: json
+
 Terraform CLI
 # Get Terraform
 
