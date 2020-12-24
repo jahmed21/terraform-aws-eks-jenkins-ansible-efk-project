@@ -108,13 +108,13 @@ module "eks" {
   map_users                            = var.map_users
   map_accounts                         = var.map_accounts
 
-  # NEW: give policy permission for the ALB ingress controller
+  /* # NEW: give policy permission for the ALB ingress controller
   resource "aws_iam_policy" "worker_policy" {
-  name        = "worker-policy"
-  description = "Worker policy for the ALB Ingress"
+    name        = "worker-policy"
+    description = "Worker policy for the ALB Ingress"
 
-  policy = file("to-be-added/iam-policy.json")
-}
+    policy = file("to-be-added/iam-policy.json")
+  } */
 }
 
 
