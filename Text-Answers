@@ -1,0 +1,31 @@
+f. Created it manually, index.html is just a file I uploaded to "ory-bucket" that says "<h1>Hi</h1>"
+g. To restrict access to that bucket for specific people I'd have to use AWS's IAM functionality. 
+This is the procedure I would follow:
+Open the IAM console.
+From the console, open the IAM user or role that should have access to only a certain bucket.
+In the Permissions tab of the IAM user or role, expand each policy to view its JSON policy document.
+In the JSON policy documents, search for the policy that grants the user permission to the s3:ListAllMyBuckets action or to s3:* actions (all S3 actions).
+Modify the policy to remove permission to the s3:ListAllMyBuckets action. (because I want him to have access only to the bucket, else I dont need to do this)
+Then, add permission to s3:ListBucket only for the bucket or folder that I want the user to access from the console.
+
+The following example policy is for access to a bucket. The policy allows the user to perform the s3:ListBucket, s3:PutObject, and s3:GetObject actions only on the static html file I created:
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Effect":"Allow",
+         "Action":[
+            "s3:ListBucket"
+         ],
+         "Resource":"arn:aws:s3:::ory-bucket"
+      },
+      {
+         "Effect":"Allow",
+         "Action":[
+            "s3:PutObject",
+            "s3:GetObject"
+         ],
+         "Resource":"arn:aws:s3:::ory-bucket/*"
+      }
+   ]
+}
