@@ -1,0 +1,47 @@
+/* This is an example pipeline file to make sure your k8s setup with jenkins was succesful */
+pipeline {
+    agent { 
+        kubernetes{
+            label 'jenkins-slave'
+        }
+        
+    }
+    environment{
+    }
+    stages {
+        stage('E - elasticsearch') {
+            steps{
+                sh script: '''
+                #!/bin/bash
+                ./kubectl create -f ./kube-logging.yaml
+                ./kubectl create -f ./elasticsearch_svc.yaml
+                ./kubectl create -f ./elasticsearch_statefulset.yaml
+                ./kubectl port-forward es-cluster-0 9200:9200 --namespace=kube-logging
+                '''
+        }
+        }
+        stage('K - Kibana') {
+            steps{
+                sh script: '''
+                #!/bin/bash
+                ./kubectl create -f ./kibana.yaml
+                ./kubectl port-forward POD=$(kubectl get pod -l app=kibana -o jsonpath="{.items[0].metadata.name}") 5601:5601 --namespace=kube-logging 
+                '''
+        }
+        /* the POD=${} bit is to get the newly created pod within the label we've created, "kibana" */
+        }
+        stage('F - fluentd') {
+            steps{
+                sh script: '''
+                #!/bin/bash
+                ./kubectl create -f ./fluentd.yaml
+                ./kubectl create -f ./elasticsearch_svc.yaml
+                ./kubectl create -f ./elasticsearch_statefulset.yaml
+                ./kubectl port-forward es-cluster-0 9200:9200 --namespace=kube-logging
+                '''
+        }
+        /* the sed in the deploy part is meant to grab the latest build number without specifying specific version, considering the version is regularily updated, then pipes it to kubectl apply */ 
+    }
+}
+}
+
