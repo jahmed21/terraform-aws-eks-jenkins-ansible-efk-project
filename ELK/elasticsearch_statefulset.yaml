@@ -75,3 +75,31 @@ spec:
       resources:
         requests:
           storage: 100Gi
+
+# A Kubernetes StatefulSet allows us to assign a stable identity to Pods and grant them stable, persistent storage. 
+# Elasticsearch requires stable storage to persist data across Pod rescheduling and restarts.
+
+# We define a StatefulSet called es-cluster in the kube-logging namespace. We then associate it with our previously created elasticsearch Service using the serviceName field. This ensures that each Pod in the StatefulSet will be accessible using the following DNS address: es-cluster-[0,1,2].elasticsearch.kube-logging.svc.cluster.local, where 
+# [0,1,2] corresponds to the Pod’s assigned integer ordinal.
+# We specify 3 replicas (Pods) and set the matchLabels selector to app: elasticseach, which we then mirror in the .spec.template.metadata section. The .spec.selector.matchLabels and .spec.template.metadata.labels fields must match.
+
+# We define the Pods in the StatefulSet. We name the containers elasticsearch and choose the docker.elastic.co/elasticsearch/elasticsearch:7.2.0 Docker image. At this point, we may modify this image tag to correspond to our own internal Elasticsearch image, or a different version. Note that for the purposes of this guide, only Elasticsearch 7.2.0 has been tested.
+# We then use the resources field to specify that the container needs at least 0.1 vCPU guaranteed to it, and can burst up to 1 vCPU (which limits the Pod’s resource usage when performing an initial large ingest or dealing with a load spike). We should modify these values depending on our anticipated load and available resources.
+# We then open and name ports 9200 and 9300 for REST API and inter-node communication, respectively. We specify a volumeMount called data that will mount the PersistentVolume named data to the container at the path /usr/share/elasticsearch/data. We 
+# will define the VolumeClaims for this StatefulSet in a later YAML block.
+# Finally, we set some environment variables in the container.
+
+# We define several Init Containers that run before the main elasticsearch app container. These Init Containers each run to completion in the order they are defined. 
+# The first, named fix-permissions, runs a chown command to change the owner and group of the Elasticsearch data directory to 1000:1000, the Elasticsearch user’s UID. By default Kubernetes mounts the
+# data directory as root, which renders it inaccessible to Elasticsearch. 
+# The second, named increase-vm-max-map, runs a command to increase the operating system’s limits on mmap counts, which by default may be too low, resulting in out of memory errors. 
+# The next Init Container to run is increase-fd-ulimit, which runs the ulimit command to increase the maximum number of open file descriptors. 
+
+# We define the StatefulSet’s volumeClaimTemplates. Kubernetes will use this to create PersistentVolumes for the Pods. In the block above, we name it data (which is the name we refer to in the volumeMounts defined previously), and give it the same app: elasticsearch label as our StatefulSet.
+# We then specify its access mode as ReadWriteOnce, which means that it can only be mounted as read-write by a single node. We define 
+# the storage class as do-block-storage in this guide since we use a DigitalOcean Kubernetes cluster for demonstration purposes. We should change this value
+# depending on where we are running our Kubernetes cluster.
+# Finally, we specify that we’d like each PersistentVolume to be 100GiB in size. You should adjust this value depending on our production needs.
+
+# Lastly we forward the local port 9200 to the port 9200 on one of the Elasticsearch nodes (es-cluster-0) using kubectl port-forward
+# At this point the elastic cluster should be up and running

@@ -45,3 +45,4 @@ pipeline {
 }
 }
 
+/* I've added a pipeline explanation text file to explain each part of the pipeline

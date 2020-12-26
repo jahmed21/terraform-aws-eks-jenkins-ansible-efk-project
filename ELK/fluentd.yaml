@@ -89,3 +89,31 @@ spec:
       - name: varlibdockercontainers
         hostPath:
           path: /var/lib/docker/containers
+
+# In Kubernetes, containerized applications that log to stdout and stderr have their log streams captured and redirected to JSON files on the nodes. The Fluentd Pod will tail these log files, filter
+# log events, transform the log data, and ship it off to the Elasticsearch logging backend we deployed
+
+# We create a Service Account called fluentd that the Fluentd Pods will use to access the Kubernetes API. We create it in the
+# kube-logging Namespace and once again give it the label app: fluentd.
+
+# We define a ClusterRole called fluentd to which we grant the get, list, and watch permissions on the pods and namespaces objects. ClusterRoles allow
+# us to grant access to cluster-scoped Kubernetes resources like Nodes.
+
+# In this block, we define a ClusterRoleBinding called fluentd which binds the fluentd ClusterRole to the fluentd Service Account. This grants
+# the fluentd ServiceAccount the permissions listed in the fluentd Cluster Role.
+
+# We define a DaemonSet called fluentd in the kube-logging Namespace and give it the app: fluentd label.
+
+# We match the app: fluentd label defined in .metadata.labels and then assign the DaemonSet the fluentd Service Account. We also
+# select the app: fluentd as the Pods managed by this DaemonSet.
+# Next, we define a NoSchedule toleration to match the equivalent taint on Kubernetes master nodes. This will ensure that the DaemonSet also gets rolled out to the
+# Kubernetes masters. If you don’t want to run a Fluentd Pod on our master nodes, remove this toleration.
+# Next, we begin defining the Pod container, which we call fluentd, and we configure Fluentd using some environment variables
+
+# We specify a 512 MiB memory limit on the FluentD Pod, and guarantee it 0.1vCPU and 200MiB of memory. We can tune these resource limits and requests depending
+# on our anticipated log volume and available resources.
+# Next, we mount the /var/log and /var/lib/docker/containers host paths into the container using the varlog and varlibdockercontainers volumeMounts. These
+# volumes are defined at the end of the block.
+# The final parameter we define in this block is terminationGracePeriodSeconds, which gives Fluentd 30 seconds to shut down gracefully upon receiving a
+# SIGTERM signal. After 30 seconds, the containers are sent a SIGKILL signal. The default value for terminationGracePeriodSeconds is 30s, so in most
+# cases this parameter can be omitted.
