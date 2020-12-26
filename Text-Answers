@@ -1,3 +1,6 @@
+# NOTE
+This file should contain the answers to the text questions. Answers that aren't mentioned here are likely explained throughout the files related to that particular assignment.
+
 f. Created it manually, index.html is just a file I uploaded to "ory-bucket" that says "<h1>Hi</h1>"
 g. To restrict access to that bucket for specific people I'd have to use AWS's IAM functionality. 
 This is the procedure I would follow:
