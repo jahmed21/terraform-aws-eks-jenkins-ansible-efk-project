@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  namespace: kube-logging
+  labels:
+    app: kibana
+spec:
+  ports:
+  - port: 5601
+  selector:
+    app: kibana
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kibana
+  namespace: kube-logging
+  labels:
+    app: kibana
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kibana
+  template:
+    metadata:
+      labels:
+        app: kibana
+    spec:
+      containers:
+      - name: kibana
+        image: docker.elastic.co/kibana/kibana:7.2.0
+        resources:
+          limits:
+            cpu: 1000m
+          requests:
+            cpu: 100m
+        env:
+          - name: ELASTICSEARCH_URL
+            value: http://elasticsearch:9200
+        ports:
+        - containerPort: 5601
+
+# In this spec we’ve defined a service called kibana in the kube-logging namespace, and gave it the app: kibana label.
+# We’ve also specified that it should be accessible on port 5601 and use the app: kibana label to select the Service’s target Pods.
+# In the Deployment spec, we define a Deployment called kibana and specify that we’d like 1 Pod replica.
+# We use the docker.elastic.co/kibana/kibana:7.2.0 image. At this point we may substitute our own private or public Kibana image to use.
+# We specify that we’d like at the very least 0.1 vCPU guaranteed to the Pod, bursting up to a limit of 1 vCPU. We may change these parameters
+# depending on our anticipated load and available resources.
+# Next, we use the ELASTICSEARCH_URL environment variable to set the endpoint and port for the Elasticsearch cluster. Using Kubernetes DNS, this endpoint
+# corresponds to its Service name elasticsearch. This domain will resolve to a list of IP addresses for the 3 Elasticsearch Pods.
+# Finally, we set Kibana’s container port to 5601, to which the kibana Service will forward requests.

@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: elasticsearch
+  namespace: kube-logging
+  labels:
+    app: elasticsearch
+spec:
+  selector:
+    app: elasticsearch
+  clusterIP: None
+  ports:
+    - port: 9200
+      name: rest
+    - port: 9300
+      name: inter-node
+
+
+# We define a Service called elasticsearch in the kube-logging Namespace, and give it the app: elasticsearch label. We then set the .spec.selector to app: elasticsearch so that the Service selects Pods with the app: elasticsearch label. When we associate our Elasticsearch StatefulSet with this Service, the Service will return DNS A records that point to Elasticsearch Pods with the app: elasticsearch label.
+# We then set clusterIP: None, which renders the service headless. Finally, we define ports 9200 and 9300 which are used to interact with the REST API, and for inter-node communication, respectively.
