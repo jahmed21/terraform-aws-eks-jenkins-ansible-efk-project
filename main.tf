@@ -111,6 +111,7 @@ module "eks" {
 
 # Use the k8s provider to allow authentication to the newly created cluster
 provider "kubernetes" {
+  alias                  = "eks"
   host                   = data.aws_eks_cluster.cluster.endpoint
   cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
   token                  = data.aws_eks_cluster_auth.cluster.token
@@ -205,11 +206,18 @@ resource "kubernetes_service" "K8SJNLP" {
 # The Ingress routes the traffic based on paths, domains, headers, etc., which consolidates multiple endpoints in a single resource that runs inside Kubernetes. 
 # With this, I can serve multiple services at the same time from one exposed load balancer.
 # I am specifically using the module that integrates ingress controller with ALB as we are working in AWS
+# It satisfies Kubernetes Ingress resources by provisioning Application Load Balancers.
+# It satisfies Kubernetes Service resources by provisioning Network Load Balancers.
 
+# If setting up the cluster for the first time, this part needs to be commented out. Then, after you have deployed the cluster, uncomment it and run.
 module "alb_ingress_controller" {
   source  = "iplabs/alb-ingress-controller/kubernetes"
   version = "3.4.0"
 
+  providers = {
+    kubernetes = "kubernetes.eks"
+  }
+  
   k8s_cluster_type = "eks"
   k8s_namespace    = "kube-system"
 
