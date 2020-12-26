@@ -1,6 +1,8 @@
 # NOTE
 This file should contain the answers to the text questions. Answers that aren't mentioned here are likely explained throughout the files related to that particular assignment.
 
+c. implemented it through the use of autoscaling groups
+d. I've implemented a solution for the crashing through the use of ALB, specifically using the ALB-ingress module to intergrate it with our k8s cluster
 f. Created it manually, index.html is just a file I uploaded to "ory-bucket" that says "<h1>Hi</h1>"
 g. To restrict access to that bucket for specific people I'd have to use AWS's IAM functionality. 
 This is the procedure I would follow:
