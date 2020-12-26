@@ -82,7 +82,7 @@ module "eks" {
   cluster_version = "1.18"
   # Hook up the private subnets so autoscaling node groups will run privately (my autoscaling node groups will have private IPs rather than be directly accesible from the internet)
   subnets         = module.vpc.private_subnets
-  version = "12.2.0"
+  version = "13.2.1"
   cluster_create_timeout = "1h"
   # Allow private endpoints to connect to k8s and join the cluster automatically
   cluster_endpoint_private_access = true 
@@ -94,7 +94,7 @@ module "eks" {
   worker_groups = [
     {
       name                          = "worker-group-1"
-      instance_type                 = "t3.micro"
+      instance_type                 = "t3.medium"
       additional_userdata           = "echo foo bar"
       asg_desired_capacity          = 1
       additional_security_group_ids = [aws_security_group.worker_group_mgmt_one.id]
@@ -107,16 +107,7 @@ module "eks" {
   map_roles                            = var.map_roles
   map_users                            = var.map_users
   map_accounts                         = var.map_accounts
-
-  /* # NEW: give policy permission for the ALB ingress controller
-  resource "aws_iam_policy" "worker_policy" {
-    name        = "worker-policy"
-    description = "Worker policy for the ALB Ingress"
-
-    policy = file("to-be-added/iam-policy.json")
-  } */
 }
-
 
 # Use the k8s provider to allow authentication to the newly created cluster
 provider "kubernetes" {
@@ -127,65 +118,105 @@ provider "kubernetes" {
   version                = "~> 1.11"
 }
 
-resource "kubernetes_deployment" "example" {
+resource "kubernetes_deployment" "jenkins" {
   metadata {
-    name = "terraform-example"
+    name = "terraform-jenkins"
     labels = {
-      test = "MyExampleApp"
+      app = "jenkins"
     }
   }
 
   spec {
-    replicas = 2
+    replicas = 1
 
     selector {
       match_labels = {
-        test = "MyExampleApp"
+        app = "jenkins"
       }
     }
 
     template {
       metadata {
         labels = {
-          test = "MyExampleApp"
+          app = "jenkins"
         }
       }
 
       spec {
         container {
-          image = "nginx:1.7.8"
-          name  = "example"
+          image = "jenkins/jenkins:lts"
+          name  = "jenkins"
 
-          resources {
-            limits {
-              cpu    = "0.5"
-              memory = "512Mi"
-            }
-            requests {
-              cpu    = "250m"
-              memory = "50Mi"
-            }
+          port {
+            container_port = 8080
+            name = "http-port"
           }
-        }
+
+          port {
+            container_port = 50000
+            name = "jnlp-port"
+          }
       }
     }
   }
 }
-
+}
 # To expose the above deployment I deploy a k8s service
-resource "kubernetes_service" "example" {
+resource "kubernetes_service" "K8SLB" {
   metadata {
-    name = "terraform-example"
+    name = "terraform-jenkinslb"
   }
   spec {
     selector = {
-      test = "MyExampleApp"
+      app = "jenkins"
     }
     port {
       port        = 80
-      target_port = 80
+      target_port = 8080
     }
 
     type = "LoadBalancer"
   }
+}
+
+# To expose allow use of k8s as cloud manager of jenkins and deployment of slave nodes to do the work, though unused at the moment
+resource "kubernetes_service" "K8SJNLP" {
+  metadata {
+    name = "terraform-jenkins"
+  }
+  spec {
+    selector = {
+      app = "jenkins"
+    }
+    port {
+      port        = 50000
+      target_port = 50000
+    }
+
+    type = "ClusterIP"
+  }
+}
+
+# In addition to deploying the cluster with autoscaling funcitonaclity from the get-go with autoscaling groups, using amazon load balancer ingress controller module
+# for terraform to solve D question of high traffic that the cluster can't scale fast enough too, we are setting the cluster with a load balancer already in place
+# Why is this important? because the K8SLB service I created already serves as a load balancer for one service at a time, so if I have multiple services that
+# need to be exposed, I would need the same amount of load balancers. This is where deploying ingress comes in handy, specifically the ingress controller which
+# this module deploys, the actual part that controls the load balancers, so they know how to serve the requests and forward the data to the Pods (like a reverse proxy).
+# The Ingress routes the traffic based on paths, domains, headers, etc., which consolidates multiple endpoints in a single resource that runs inside Kubernetes. 
+# With this, I can serve multiple services at the same time from one exposed load balancer.
+# I am specifically using the module that integrates ingress controller with ALB as we are working in AWS
+
+module "alb_ingress_controller" {
+  source  = "iplabs/alb-ingress-controller/kubernetes"
+  version = "3.4.0"
+
+  /* providers = {
+    kubernetes = "kubernetes.eks"
+  } */
+
+  k8s_cluster_type = "eks"
+  k8s_namespace    = "kube-system"
+
+  aws_region_name  = var.region
+  k8s_cluster_name = var.cluster_name
 }
