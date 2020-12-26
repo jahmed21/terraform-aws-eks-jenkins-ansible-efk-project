@@ -1,0 +1,5 @@
+- name: Deploy latest version of Prometheus chart inside default namespace
+  community.kubernetes.helm:
+    name: test
+    chart_ref: stable/prometheus
+    release_namespace: default
