@@ -1,7 +1,8 @@
 # NOTE
 This file should contain the answers to the text questions. Answers that aren't mentioned here are likely explained throughout the files related to that particular assignment.
 
-c. implemented it through the use of autoscaling groups
+c. Using k8s's Horizontal Pod Autoscaler feature, assuming a hypothetical scenario where exeeding 50% CPU usage would be considered our danger line, we implement the following kubectl commands:
+"kubectl autoscale deployment DEPLOYMENT --cpu-percent=50 --min=1 --max=10"
 d. I've implemented a solution for the crashing through the use of ALB, specifically using the ALB-ingress module to intergrate it with our k8s cluster
 f. Created it manually, index.html is just a file I uploaded to "ory-bucket" that says "<h1>Hi</h1>"
 g. To restrict access to that bucket for specific people I'd have to use AWS's IAM functionality. 
@@ -34,3 +35,26 @@ The following example policy is for access to a bucket. The policy allows the us
       }
    ]
 }
+
+However, if we're talking about restricting access to people from outside: By default, all S3 buckets are private and can be accessed only by users that are explicitly granted access. When using AWS, it's a best practice to restrict access to your resources to the people that absolutely need it.
+
+Specifically, Writing bucket policies that define access to specific buckets and objects. You can use a bucket policy to grant access across AWS accounts, grant public or anonymous permissions, and allow or block access based on conditions.
+
+This is especially useful for when your bucket is enabled as a static website. You can use a bucket policy to make everything in the bucket read-only.
+Clean and easy to review, bucket policies are data-centric permissions.
+If you're not just serving a static website allowing public access is usually considered against best practice.
+For example, this should allow public read access to my static website if I were to allow it:
+
+{
+    "Version": "2008-10-17",
+    "Statement":[
+    {
+        "Sid":"AllowPublicRead",
+        "Effect":"Allow",
+        "Principal": {
+            "AWS":"*"
+        },
+        "Action":"s3:GetObject",
+        "Resource":"arn:aws:s3:::ory-bucket/*"
+    }
+    
