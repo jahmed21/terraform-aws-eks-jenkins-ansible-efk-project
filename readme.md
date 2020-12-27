@@ -109,7 +109,7 @@ kubectl get pv
 
 # create volume claim
 
-kubectl apply -n jenkins -f ./jenkins/amazon-eks/jenkins.pvc.yaml
+kubectl apply -n jenkins -f ./jenkins/jenkins.pvc.yaml
 
 kubectl -n jenkins get pvc
 
