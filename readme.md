@@ -1,3 +1,23 @@
+# The assignments I've needed to handle with this project:
+Practical test: 
+
+a.       Create a new Kubernetes cluster on AWS using EKS
+
+The entire creation of the cluster must be using Terraform 
+
+b.       Install hello-world-helm (you can install a different chart if you want…) on the cluster you have created, your deployment must evolve Ansible and Jenkins (you can install Jenkins on ec2 or k8s) as part of the deployment. 
+
+c.       Add autoscaling to the app. 
+
+d.       Every morning at 10:00AM hello-world app is experiencing high traffic and doesn’t manage to scale fast enough, this scenario is causing to a downtime of “hello-world” during the peak, propose a solution and implement it. 
+
+e.      Add a Jenkins pipeline job that will install EFK (Elastic-Fluent-Kibana) on the cluster so users will be able to see containers logs in Kibana 
+
+f.       Create Cloudfront distribution that show a static html file from an s3 bucket 
+
+g.      How do you restrict access to specific people? 
+
+
 # Run Amazon CLI
 docker run -it --rm -v ${PWD}:/work -w /work --entrypoint /bin/sh amazon/aws-cli:2.0.43
 
