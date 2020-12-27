@@ -1,5 +1,4 @@
 # The assignments I've needed to handle with this project:
-Practical test: 
 
 a.       Create a new Kubernetes cluster on AWS using EKS
 
@@ -16,6 +15,8 @@ e.      Add a Jenkins pipeline job that will install EFK (Elastic-Fluent-Kibana)
 f.       Create Cloudfront distribution that show a static html file from an s3 bucket 
 
 g.      How do you restrict access to specific people? 
+
+The text-answers file contains answers to theorotical parts of the project and further questions, pondering, etc
 
 
 # Run Amazon CLI
