@@ -1,9 +1,12 @@
 # NOTE
 This file should contain the answers to the text questions. Answers that aren't mentioned here are likely explained throughout the files related to that particular assignment.
 
-c. Using k8s's Horizontal Pod Autoscaler feature, assuming a hypothetical scenario where exeeding 50% CPU usage would be considered our danger line, we implement the following kubectl commands:
+c. Using k8s's autoscaling feature, assuming a hypothetical scenario where exeeding 50% CPU usage would be considered our danger line, we implement the following kubectl command:
 "kubectl autoscale deployment DEPLOYMENT --cpu-percent=50 --min=1 --max=10"
-d. I've implemented a solution for the crashing through the use of ALB, specifically using the ALB-ingress module to intergrate it with our k8s cluster
+d. Essentially we have 2 kinds of scaling - Horziontal and and Vertical.
+Horizontal - Adds or removes pods
+Vertical - Modifies CPU and/or RAM resources allocated to a Pod.
+As I understand the question and as you said autoscaling groups will scale my nodes but not the pods, then the answer I've given now to question "c" handles the pod deploying part, and now this questions says that pods are being scaled fast enough so THIS is where autoscaling comes into play, which I've implemented in the construction of the cluster through terraform.
 f. Created it manually, index.html is just a file I uploaded to "ory-bucket" that says "<h1>Hi</h1>"
 g. To restrict access to that bucket for specific people I'd have to use AWS's IAM functionality. 
 This is the procedure I would follow:
