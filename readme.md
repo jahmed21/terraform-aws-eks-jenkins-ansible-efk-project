@@ -1,4 +1,4 @@
-# The assignments I've needed to handle with this project:
+# The assignments I aimed to complete with this project:
 
 a.       Create a new Kubernetes cluster on AWS using EKS
 
